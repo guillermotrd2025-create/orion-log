@@ -1,8 +1,10 @@
 /**
  * Statistics — Vista de análisis estadístico con gráficos
  */
+import { useState, useEffect } from 'react'
 import { useTrading } from '../../context/TradingContext'
 import { useTradeStats } from '../../hooks/useTradeStats'
+import DateRangeFilter from '../DateRangeFilter'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -38,9 +40,15 @@ function StatSection({ title, icon, children }) {
 
 export default function Statistics() {
   const { challengeTrades, activeChallenge } = useTrading()
-  const stats = useTradeStats(challengeTrades)
+  const [filteredTrades, setFilteredTrades] = useState(challengeTrades)
+  const stats = useTradeStats(filteredTrades)
 
-  if (stats.totalTrades === 0) {
+  // Sync filteredTrades when challengeTrades changes
+  useEffect(() => {
+    setFilteredTrades(challengeTrades)
+  }, [challengeTrades])
+
+  if (stats.totalTrades === 0 && challengeTrades.length === 0) {
     return (
       <div className="animate-fade-in">
         <h1 className="text-xl font-bold font-mono text-text-primary mb-4">Estadísticas</h1>
@@ -61,6 +69,9 @@ export default function Statistics() {
           {activeChallenge?.nombre || 'Análisis'} — {stats.totalTrades} trades analizados
         </p>
       </div>
+
+      {/* Filtro por fechas */}
+      <DateRangeFilter trades={challengeTrades} onFilter={setFilteredTrades} />
 
       {/* Row 1: Distribution + Setup WR */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

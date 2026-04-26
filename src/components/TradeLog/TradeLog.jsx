@@ -3,6 +3,7 @@
  */
 import { useState, useMemo } from 'react'
 import { useTrading } from '../../context/TradingContext'
+import DateRangeFilter from '../DateRangeFilter'
 
 const EMOJIS = ['😰', '😟', '😐', '🙂', '😌']
 
@@ -13,6 +14,10 @@ export default function TradeLog() {
   const [filterSetup, setFilterSetup] = useState('ALL')
   const [filterResult, setFilterResult] = useState('ALL')
   const [expandedId, setExpandedId] = useState(null)
+  const [dateFiltered, setDateFiltered] = useState(challengeTrades)
+
+  // Re-sync when challengeTrades changes
+  useMemo(() => setDateFiltered(challengeTrades), [challengeTrades])
 
   const toggleSort = (field) => {
     if (sortBy === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -20,7 +25,7 @@ export default function TradeLog() {
   }
 
   const filtered = useMemo(() => {
-    let trades = [...challengeTrades]
+    let trades = [...dateFiltered]
     if (filterSetup !== 'ALL') trades = trades.filter(t => t.tipo_setup === filterSetup)
     if (filterResult !== 'ALL') trades = trades.filter(t => t.resultado === filterResult)
     trades.sort((a, b) => {
@@ -30,7 +35,7 @@ export default function TradeLog() {
       return sortDir === 'asc' ? va - vb : vb - va
     })
     return trades
-  }, [challengeTrades, filterSetup, filterResult, sortBy, sortDir])
+  }, [dateFiltered, filterSetup, filterResult, sortBy, sortDir])
 
   const handleDelete = (id) => {
     if (window.confirm('¿Eliminar este trade?')) { deleteTrade(id); setExpandedId(null) }
@@ -46,6 +51,9 @@ export default function TradeLog() {
           </p>
         </div>
       </div>
+
+      {/* Filtro por fechas */}
+      <DateRangeFilter trades={challengeTrades} onFilter={setDateFiltered} />
 
       {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap">

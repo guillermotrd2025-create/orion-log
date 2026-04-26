@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { id: 'trade_log', label: 'Historial', icon: '📋', shortcut: 'H' },
   { id: 'statistics', label: 'Estadísticas', icon: '📈', shortcut: 'E' },
   { id: 'challenges', label: 'Challenges', icon: '🏆', shortcut: 'C' },
+  { id: 'global_stats', label: 'Vista Global', icon: '🌍', shortcut: 'G' },
 ]
 
 export default function Sidebar() {
