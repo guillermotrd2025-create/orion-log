@@ -9,6 +9,7 @@ import MetricCard from './MetricCard'
 import EquityCurve from './EquityCurve'
 import SafetyAlerts from './SafetyAlerts'
 import DailyStatus from './DailyStatus'
+import CalendarHeatmap from './CalendarHeatmap'
 
 export default function Dashboard() {
   const { activeChallenge, challengeTrades, setView, closeChallenge, canTrade } = useTrading()
@@ -209,12 +210,19 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Curva de equity */}
-      <EquityCurve
-        data={stats.equityData}
-        objetivo={activeChallenge?.objetivo_usd || 800}
-        ddLimit={-(activeChallenge?.dd_max_usd || 1000)}
-      />
+      {/* Curva de equity y Heatmap */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <EquityCurve
+            data={stats.equityData}
+            objetivo={activeChallenge?.objetivo_usd || 800}
+            ddLimit={-(activeChallenge?.dd_max_usd || 1000)}
+          />
+        </div>
+        <div className="lg:col-span-1">
+          <CalendarHeatmap trades={challengeTrades} />
+        </div>
+      </div>
 
       {/* Modal cerrar challenge */}
       {showCloseModal && (
