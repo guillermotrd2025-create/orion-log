@@ -2,7 +2,7 @@
  * ORION LOG — Contexto global de trading
  * Gestiona el estado de trades, challenges y sincronización con Neon DB (vía /api).
  */
-import { createContext, useContext, useReducer, useEffect, useCallback, useState } from 'react'
+import { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import { calcPnlNeto, pnlAcumulado } from '../utils/calculations'
 
 const TradingContext = createContext(null)
@@ -11,7 +11,6 @@ const getInitialState = () => ({
   trades: [],
   challenges: [],
   activeChallengeId: localStorage.getItem('orion_log_active_challenge') || null,
-  weeklyReviews: [],
   draftTrade: (() => {
     try {
       const draft = localStorage.getItem('orion_log_draft_trade')
@@ -25,12 +24,14 @@ const getInitialState = () => ({
 const tradingReducer = (state, action) => {
   switch (action.type) {
     case 'SET_DATA': {
+      const challenges = Array.isArray(action.payload.challenges) ? action.payload.challenges : []
+      const trades = Array.isArray(action.payload.trades) ? action.payload.trades : []
       return {
         ...state,
-        challenges: Array.isArray(action.payload.challenges) ? action.payload.challenges : [],
-        trades: Array.isArray(action.payload.trades) ? action.payload.trades : [],
+        challenges,
+        trades,
         isLoading: false,
-        activeChallengeId: state.activeChallengeId || (Array.isArray(action.payload.challenges) && action.payload.challenges.length > 0 ? action.payload.challenges[0].id : null)
+        activeChallengeId: state.activeChallengeId || (challenges.length > 0 ? challenges[0].id : null)
       }
     }
     case 'ADD_TRADE': {
@@ -49,8 +50,25 @@ const tradingReducer = (state, action) => {
         activeChallengeId: action.payload.id,
       }
     }
+    case 'UPDATE_CHALLENGE': {
+      const challenges = (state.challenges || []).map(c =>
+        c.id === action.payload.id ? { ...c, ...action.payload } : c
+      )
+      // Si el challenge actualizado ya no está ACTIVO y era el seleccionado, desactivar
+      const updated = challenges.find(c => c.id === action.payload.id)
+      let activeChallengeId = state.activeChallengeId
+      if (updated && updated.resultado_final !== 'ACTIVO' && state.activeChallengeId === updated.id) {
+        activeChallengeId = null
+        localStorage.removeItem('orion_log_active_challenge')
+      }
+      return { ...state, challenges, activeChallengeId }
+    }
     case 'SET_ACTIVE_CHALLENGE': {
-      localStorage.setItem('orion_log_active_challenge', action.payload)
+      if (action.payload) {
+        localStorage.setItem('orion_log_active_challenge', action.payload)
+      } else {
+        localStorage.removeItem('orion_log_active_challenge')
+      }
       return { ...state, activeChallengeId: action.payload }
     }
     case 'SET_DRAFT_TRADE': {
@@ -80,14 +98,17 @@ export function TradingProvider({ children }) {
           fetch('/api/challenges'),
           fetch('/api/trades')
         ])
-        
+
         if (chalRes.ok && tradRes.ok) {
           const challenges = await chalRes.json()
           const trades = await tradRes.json()
           dispatch({ type: 'SET_DATA', payload: { challenges, trades } })
+        } else {
+          dispatch({ type: 'SET_DATA', payload: { challenges: [], trades: [] } })
         }
       } catch (error) {
         console.error('Error cargando datos:', error)
+        dispatch({ type: 'SET_DATA', payload: { challenges: [], trades: [] } })
       }
     }
     loadData()
@@ -101,12 +122,14 @@ export function TradingProvider({ children }) {
     .filter(t => t.challenge_id === state.activeChallengeId)
     .sort((a, b) => new Date(a.fecha + 'T' + (a.hora_entrada || '00:00')) - new Date(b.fecha + 'T' + (b.hora_entrada || '00:00')))
 
+  // ¿Puede operar? Solo si hay challenge activo con resultado_final === 'ACTIVO'
+  const canTrade = activeChallenge && activeChallenge.resultado_final === 'ACTIVO'
+
   // Acciones asíncronas
   const addTrade = useCallback(async (payload) => {
-    // Calculos locales antes de enviar
-    const challengeTrades = state.trades.filter(t => t.challenge_id === state.activeChallengeId)
+    const currentTrades = (Array.isArray(state.trades) ? state.trades : []).filter(t => t.challenge_id === state.activeChallengeId)
     const pnlNeto = calcPnlNeto(payload.resultado, payload.spread || 1.5)
-    const acumulado = pnlAcumulado(challengeTrades) + pnlNeto
+    const acumulado = pnlAcumulado(currentTrades) + pnlNeto
 
     const newTrade = {
       ...payload,
@@ -114,8 +137,8 @@ export function TradingProvider({ children }) {
       pnl_neto: pnlNeto,
       challenge_id: state.activeChallengeId,
       pnl_acumulado_challenge: +acumulado.toFixed(2),
-      nro_trade_challenge: challengeTrades.length + 1,
-      segundo_trade_dia: challengeTrades.some(t => t.fecha === payload.fecha),
+      nro_trade_challenge: currentTrades.length + 1,
+      segundo_trade_dia: currentTrades.some(t => t.fecha === payload.fecha),
       hora_valida: (() => {
         if (!payload.hora_entrada) return false
         const [h, m] = payload.hora_entrada.split(':').map(Number)
@@ -128,7 +151,6 @@ export function TradingProvider({ children }) {
       newTrade.no_movio_sl_a_be = true
     }
 
-    // Optimistic UI
     dispatch({ type: 'ADD_TRADE', payload: newTrade })
 
     try {
@@ -165,6 +187,23 @@ export function TradingProvider({ children }) {
     }
   }, [])
 
+  const closeChallenge = useCallback(async (id, resultado) => {
+    const fechaFin = new Date().toISOString().split('T')[0]
+    const updateData = { id, resultado_final: resultado, fecha_fin_real: fechaFin }
+
+    dispatch({ type: 'UPDATE_CHALLENGE', payload: updateData })
+
+    try {
+      await fetch('/api/challenges', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      })
+    } catch (error) {
+      console.error('Error cerrando challenge:', error)
+    }
+  }, [])
+
   const setActiveChallenge = useCallback((id) => dispatch({ type: 'SET_ACTIVE_CHALLENGE', payload: id }), [])
   const setDraftTrade = useCallback((draft) => dispatch({ type: 'SET_DRAFT_TRADE', payload: draft }), [])
   const clearDraft = useCallback(() => dispatch({ type: 'CLEAR_DRAFT' }), [])
@@ -175,9 +214,11 @@ export function TradingProvider({ children }) {
     dispatch,
     activeChallenge,
     challengeTrades,
+    canTrade,
     addTrade,
     deleteTrade,
     addChallenge,
+    closeChallenge,
     setActiveChallenge,
     setDraftTrade,
     clearDraft,

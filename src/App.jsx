@@ -7,12 +7,14 @@ import Dashboard from './components/Dashboard/Dashboard'
 import TradeForm from './components/TradeForm/TradeForm'
 import TradeLog from './components/TradeLog/TradeLog'
 import Statistics from './components/Statistics/Statistics'
+import Challenges from './components/Challenges/Challenges'
 
 const views = {
   dashboard: Dashboard,
   new_trade: TradeForm,
   trade_log: TradeLog,
   statistics: Statistics,
+  challenges: Challenges,
 }
 
 export default function App() {

@@ -18,12 +18,35 @@ const STEPS = [
 ]
 
 export default function TradeForm() {
-  const { addTrade, setView, challengeTrades, state } = useTrading()
+  const { addTrade, setView, challengeTrades, state, canTrade, activeChallenge } = useTrading()
   const [step, setStep] = useState(1)
   const [data, setData] = useState(() => {
     return state.draftTrade || { ...emptyTrade }
   })
   const [isSaving, setIsSaving] = useState(false)
+
+  // Bloquear si no hay challenge activo
+  if (!canTrade) {
+    return (
+      <div className="max-w-2xl mx-auto animate-fade-in">
+        <div className="card text-center py-16">
+          <p className="text-4xl mb-4">🔒</p>
+          <h2 className="text-lg font-bold font-mono text-text-primary mb-2">No hay Challenge Activo</h2>
+          <p className="text-sm text-text-secondary mb-6">
+            {activeChallenge
+              ? `Tu challenge "${activeChallenge.nombre}" está cerrado como ${activeChallenge.resultado_final}.`
+              : 'Necesitas crear o seleccionar un challenge activo para registrar trades.'}
+          </p>
+          <button
+            className="px-6 py-2.5 rounded-lg font-semibold text-sm bg-gradient-to-r from-[#378ADD] to-[#1D9E75] text-white hover:opacity-90 transition-all shadow-lg shadow-blue/20"
+            onClick={() => setView('challenges')}
+          >
+            🏆 Ir a Challenges
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const handleChange = useCallback((updated) => {
     setData(updated)

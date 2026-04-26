@@ -1,6 +1,7 @@
 /**
  * Dashboard — Panel principal con métricas en tiempo real del challenge activo
  */
+import { useState } from 'react'
 import { useTrading } from '../../context/TradingContext'
 import { useTradeStats } from '../../hooks/useTradeStats'
 import { useChallengeStatus } from '../../hooks/useChallengeStatus'
@@ -10,9 +11,31 @@ import SafetyAlerts from './SafetyAlerts'
 import DailyStatus from './DailyStatus'
 
 export default function Dashboard() {
-  const { activeChallenge, challengeTrades } = useTrading()
+  const { activeChallenge, challengeTrades, setView, closeChallenge, canTrade } = useTrading()
   const stats = useTradeStats(challengeTrades)
   const status = useChallengeStatus(activeChallenge, challengeTrades)
+  const [showCloseModal, setShowCloseModal] = useState(false)
+
+  // Sin challenge seleccionado
+  if (!activeChallenge) {
+    return (
+      <div className="animate-fade-in">
+        <div className="card text-center py-16">
+          <p className="text-4xl mb-4">🏆</p>
+          <h2 className="text-lg font-bold font-mono text-text-primary mb-2">Sin Challenge Activo</h2>
+          <p className="text-sm text-text-secondary mb-6">
+            Selecciona o crea un challenge para ver tu dashboard.
+          </p>
+          <button
+            className="px-6 py-2.5 rounded-lg font-semibold text-sm bg-gradient-to-r from-[#378ADD] to-[#1D9E75] text-white hover:opacity-90 transition-all shadow-lg shadow-blue/20"
+            onClick={() => setView('challenges')}
+          >
+            Ir a Challenges
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const rachaText = stats.rachaCurrent.tipo
     ? `${stats.rachaCurrent.tipo === 'TP' ? '+' : stats.rachaCurrent.tipo === 'SL' ? '-' : '~'}${stats.rachaCurrent.count} ${stats.rachaCurrent.tipo} seguidos`
@@ -25,17 +48,28 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold font-mono text-[#E8E9EC]">
+          <h1 className="text-xl font-bold font-mono text-text-primary">
             {activeChallenge?.nombre || 'ORION LOG'}
           </h1>
-          <p className="text-sm text-[#6B7280] mt-1">
-            {activeChallenge ? `Inicio: ${activeChallenge.fecha_inicio}` : 'Sin challenge activo'}
+          <p className="text-sm text-text-muted mt-1">
+            Inicio: {activeChallenge.fecha_inicio}
+            {activeChallenge.resultado_final !== 'ACTIVO' && (
+              <span className="ml-2 text-red font-mono">({activeChallenge.resultado_final})</span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`badge ${status.estaActivo ? 'badge-green' : 'badge-red'}`}>
-            {status.estaActivo ? '● ACTIVO' : '● CERRADO'}
+          <span className={`badge ${canTrade ? 'badge-green' : 'badge-red'}`}>
+            {canTrade ? '● ACTIVO' : `● ${activeChallenge.resultado_final}`}
           </span>
+          {canTrade && (
+            <button
+              className="text-xs text-text-muted hover:text-red px-3 py-1.5 rounded-lg border border-border hover:border-red/30 transition-all duration-200"
+              onClick={() => setShowCloseModal(true)}
+            >
+              Cerrar
+            </button>
+          )}
         </div>
       </div>
 
@@ -181,6 +215,35 @@ export default function Dashboard() {
         objetivo={activeChallenge?.objetivo_usd || 800}
         ddLimit={-(activeChallenge?.dd_max_usd || 1000)}
       />
+
+      {/* Modal cerrar challenge */}
+      {showCloseModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={() => setShowCloseModal(false)}>
+          <div className="card w-full max-w-md mx-4 !bg-[#1A1C24] !border-[#2A2D38]" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold font-mono text-text-primary mb-2">Cerrar Challenge</h3>
+            <p className="text-sm text-text-secondary mb-6">¿Cómo finalizó "{activeChallenge.nombre}"?</p>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { val: 'SUPERADO', label: 'Superado', icon: '✅', color: 'from-[#1D9E75] to-[#15724F]' },
+                { val: 'FALLADO',  label: 'Fallado',  icon: '❌', color: 'from-[#E24B4A] to-[#B33A39]' },
+                { val: 'RETIRADO', label: 'Retirado', icon: '⏸️', color: 'from-[#6B7280] to-[#4B5563]' },
+              ].map(opt => (
+                <button
+                  key={opt.val}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-lg bg-gradient-to-b ${opt.color} text-white font-semibold text-sm hover:opacity-90 transition-all duration-200`}
+                  onClick={() => { closeChallenge(activeChallenge.id, opt.val); setShowCloseModal(false) }}
+                >
+                  <span className="text-2xl">{opt.icon}</span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
+            <button className="mt-4 w-full py-2 text-xs text-text-muted hover:text-text-secondary transition-colors" onClick={() => setShowCloseModal(false)}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
