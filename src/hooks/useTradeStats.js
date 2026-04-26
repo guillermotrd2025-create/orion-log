@@ -49,6 +49,8 @@ export const useTradeStats = (trades) => {
         },
         emocionalCorr: [],
         confianzaCorr: [],
+        pnlHoy: 0,
+        tradesHoy: [],
       }
     }
 
