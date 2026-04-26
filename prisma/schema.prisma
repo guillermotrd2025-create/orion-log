@@ -78,3 +78,16 @@ model Trade {
 
   @@map("orion_trades")
 }
+
+model DiaryEntry {
+  id          String   @id @default(uuid())
+  fecha       String   @unique
+  notas       String
+  humor       Int      @default(3)
+  horas_sueno Float?
+  ejercicio   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("orion_diary")
+}

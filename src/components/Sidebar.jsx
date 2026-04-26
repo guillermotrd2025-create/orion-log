@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { id: 'statistics', label: 'Estadísticas', icon: '📈', shortcut: 'E' },
   { id: 'challenges', label: 'Challenges', icon: '🏆', shortcut: 'C' },
   { id: 'global_stats', label: 'Vista Global', icon: '🌍', shortcut: 'G' },
+  { id: 'diary', label: 'Diario', icon: '📓', shortcut: 'J' },
 ]
 
 export default function Sidebar() {

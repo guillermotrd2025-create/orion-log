@@ -9,6 +9,7 @@ import TradeLog from './components/TradeLog/TradeLog'
 import Statistics from './components/Statistics/Statistics'
 import Challenges from './components/Challenges/Challenges'
 import GlobalStats from './components/GlobalStats/GlobalStats'
+import Diary from './components/Diary/Diary'
 
 const views = {
   dashboard: Dashboard,
@@ -17,6 +18,7 @@ const views = {
   statistics: Statistics,
   challenges: Challenges,
   global_stats: GlobalStats,
+  diary: Diary,
 }
 
 export default function App() {
