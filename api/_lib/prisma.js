@@ -9,8 +9,11 @@ import { PrismaNeon } from '@prisma/adapter-neon'
 import ws from 'ws'
 neonConfig.webSocketConstructor = ws
 
-// HARDCODED JUST FOR SEEDING
-const connectionString = "postgresql://neondb_owner:npg_1oJ8azHKVtMA@ep-sweet-meadow-abitnrgk-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require"
+const connectionString = process.env.DATABASE_URL
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL is not defined in the environment.')
+}
 
 const pool = new Pool({ connectionString })
 const adapter = new PrismaNeon(pool)
