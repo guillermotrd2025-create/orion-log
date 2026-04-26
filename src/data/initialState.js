@@ -684,6 +684,8 @@ export const emptyTrade = {
   ruptura_limpia: true,
   llego_a_10pt: false,
   notas_pre: '',
+  pnl_bruto_manual: '',
+  screenshot: null,
 }
 
 // Estado vacío de un nuevo challenge

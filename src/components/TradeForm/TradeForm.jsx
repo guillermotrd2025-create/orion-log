@@ -6,15 +6,13 @@ import { useState, useCallback } from 'react'
 import { useTrading } from '../../context/TradingContext'
 import { emptyTrade } from '../../data/initialState'
 import Step1Context from './Step1Context'
-import Step2Execution from './Step2Execution'
-import Step3Result from './Step3Result'
-import Step4Review from './Step4Review'
+import Step2QuickResult from './Step2QuickResult'
+import Step3Review from './Step3Review'
 
 const STEPS = [
   { id: 1, label: 'Contexto', icon: '🎯' },
-  { id: 2, label: 'Ejecución', icon: '⚡' },
-  { id: 3, label: 'Resultado', icon: '📊' },
-  { id: 4, label: 'Revisión', icon: '✅' },
+  { id: 2, label: 'Resultado', icon: '💰' },
+  { id: 3, label: 'Revisión', icon: '✅' },
 ]
 
 export default function TradeForm() {
@@ -52,21 +50,21 @@ export default function TradeForm() {
     setData(updated)
   }, [])
 
-  const nextStep = () => setStep(s => Math.min(s + 1, 4))
+  const nextStep = () => setStep(s => Math.min(s + 1, 3))
   const prevStep = () => setStep(s => Math.max(s - 1, 1))
 
   const canAdvance = () => {
     if (step === 1) {
       return data.tipo_setup && data.direccion && data.tendencia_diaria && data.volatilidad_sesion
     }
-    if (step === 3) {
-      return data.resultado
+    if (step === 2) {
+      return data.pnl_bruto_manual !== undefined && data.pnl_bruto_manual !== ''
     }
     return true
   }
 
   const handleSave = () => {
-    if (!data.resultado) return
+    if (data.pnl_bruto_manual === undefined) return
     setIsSaving(true)
     setTimeout(() => {
       addTrade(data)
@@ -83,7 +81,7 @@ export default function TradeForm() {
       <div className="mb-6">
         <h1 className="text-xl font-bold font-mono text-text-primary">Registrar Trade</h1>
         <p className="text-sm text-text-secondary mt-1">
-          Paso {step} de 4 — {STEPS[step - 1].label}
+          Paso {step} de 3 — {STEPS[step - 1].label}
         </p>
       </div>
 
@@ -116,9 +114,8 @@ export default function TradeForm() {
       {/* Step content */}
       <div className="mb-8">
         {step === 1 && <Step1Context data={data} onChange={handleChange} />}
-        {step === 2 && <Step2Execution data={data} onChange={handleChange} />}
-        {step === 3 && <Step3Result data={data} onChange={handleChange} />}
-        {step === 4 && <Step4Review data={data} tradesDelDia={tradesDelDia} />}
+        {step === 2 && <Step2QuickResult data={data} onChange={handleChange} />}
+        {step === 3 && <Step3Review data={data} tradesDelDia={tradesDelDia} />}
       </div>
 
       {/* Navigation */}
@@ -130,7 +127,7 @@ export default function TradeForm() {
           {step === 1 ? '← Cancelar' : '← Anterior'}
         </button>
 
-        {step < 4 ? (
+        {step < 3 ? (
           <button
             className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
               canAdvance()

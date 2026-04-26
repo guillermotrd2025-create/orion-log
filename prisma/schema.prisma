@@ -56,6 +56,8 @@ model Trade {
   no_movio_sl_a_be        Boolean  @default(false)
   notas_post              String?
   notas_pre               String?
+  pnl_bruto_manual        String?
+  screenshot              String?
   leccion                 String?
   pnl_acumulado_challenge Float    @default(0)
   nro_trade_challenge     Int      @default(0)

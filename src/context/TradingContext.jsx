@@ -128,7 +128,10 @@ export function TradingProvider({ children }) {
   // Acciones asíncronas
   const addTrade = useCallback(async (payload) => {
     const currentTrades = (Array.isArray(state.trades) ? state.trades : []).filter(t => t.challenge_id === state.activeChallengeId)
-    const pnlNeto = calcPnlNeto(payload.resultado, payload.spread || 1.5)
+    
+    // Si viene pnl_neto ya calculado (modo manual), lo usamos
+    const pnlNeto = payload.pnl_neto !== undefined ? payload.pnl_neto : calcPnlNeto(payload.resultado, payload.spread || 1.5)
+    
     const acumulado = pnlAcumulado(currentTrades) + pnlNeto
 
     const newTrade = {
