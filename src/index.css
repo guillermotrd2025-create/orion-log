@@ -1,0 +1,276 @@
+@import "tailwindcss";
+
+/* =========================================================
+   ORION LOG — Design System
+   Estética: terminal de trading profesional
+   ========================================================= */
+
+/* --- Custom Theme via Tailwind v4 --- */
+@theme {
+  --color-bg-base: #0A0B0E;
+  --color-bg-card: #12141A;
+  --color-bg-elevated: #1A1C24;
+  --color-border: #1E2028;
+  --color-border-hover: #2A2D38;
+
+  --color-green: #1D9E75;
+  --color-green-dim: #1D9E7533;
+  --color-red: #E24B4A;
+  --color-red-dim: #E24B4A33;
+  --color-amber: #BA7517;
+  --color-amber-dim: #BA751733;
+  --color-blue: #378ADD;
+  --color-blue-dim: #378ADD33;
+
+  --color-text-primary: #E8E9EC;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #4B5058;
+
+  --font-display: 'JetBrains Mono', monospace;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* --- Base Styles --- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+}
+
+/* --- Utility Classes --- */
+.font-mono {
+  font-family: var(--font-display);
+}
+
+.card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  transition: border-color 0.2s ease;
+}
+.card:hover {
+  border-color: var(--color-border-hover);
+}
+
+.card-compact {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+/* --- Progress bars --- */
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--color-bg-elevated);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background-color 0.3s ease;
+}
+
+/* --- Navigation --- */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.nav-item:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-elevated);
+}
+.nav-item.active {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-elevated);
+  border-color: var(--color-border);
+}
+
+/* --- Form Controls --- */
+.input-field {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease;
+  outline: none;
+}
+.input-field:focus {
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 2px var(--color-blue-dim);
+}
+.input-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+.toggle-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.toggle-btn:hover {
+  border-color: var(--color-border-hover);
+  color: var(--color-text-primary);
+}
+.toggle-btn.active {
+  border-color: var(--color-blue);
+  background-color: var(--color-blue-dim);
+  color: var(--color-blue);
+}
+.toggle-btn.active-green {
+  border-color: var(--color-green);
+  background-color: var(--color-green-dim);
+  color: var(--color-green);
+}
+.toggle-btn.active-red {
+  border-color: var(--color-red);
+  background-color: var(--color-red-dim);
+  color: var(--color-red);
+}
+.toggle-btn.active-amber {
+  border-color: var(--color-amber);
+  background-color: var(--color-amber-dim);
+  color: var(--color-amber);
+}
+
+/* --- Stepper --- */
+.stepper-dot {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 2px solid var(--color-border);
+  color: var(--color-text-secondary);
+  transition: all 0.3s ease;
+}
+.stepper-dot.active {
+  border-color: var(--color-blue);
+  background-color: var(--color-blue-dim);
+  color: var(--color-blue);
+}
+.stepper-dot.completed {
+  border-color: var(--color-green);
+  background-color: var(--color-green);
+  color: white;
+}
+
+/* --- Slider --- */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-bg-elevated);
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-blue);
+  cursor: pointer;
+  border: 2px solid var(--color-bg-card);
+  box-shadow: 0 0 0 2px var(--color-blue-dim);
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 4px var(--color-red-dim); }
+  50% { box-shadow: 0 0 16px var(--color-red-dim); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+.animate-slide-in {
+  animation: slideIn 0.3s ease forwards;
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease infinite;
+}
+
+/* --- Table --- */
+.table-row {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.15s ease;
+}
+.table-row:hover {
+  background-color: var(--color-bg-elevated);
+}
+
+/* --- Tooltip & Badge --- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+.badge-green {
+  background-color: var(--color-green-dim);
+  color: var(--color-green);
+}
+.badge-red {
+  background-color: var(--color-red-dim);
+  color: var(--color-red);
+}
+.badge-amber {
+  background-color: var(--color-amber-dim);
+  color: var(--color-amber);
+}
+.badge-blue {
+  background-color: var(--color-blue-dim);
+  color: var(--color-blue);
+}
+
+/* --- Recharts overrides --- */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--color-border);
+}
+.recharts-text {
+  fill: var(--color-text-secondary);
+  font-size: 0.6875rem;
+}

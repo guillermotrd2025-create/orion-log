@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Challenge {
+  id              String   @id @default(uuid())
+  nombre          String
+  fecha_inicio    String
+  fecha_fin_real  String?
+  resultado_final String   @default("ACTIVO")
+  cuenta_usd      Float    @default(10000)
+  objetivo_usd    Float    @default(800)
+  dd_max_usd      Float    @default(1000)
+  limite_diario_usd Float  @default(500)
+  coste_cuenta    Float    @default(100)
+  dias_maximos    Int      @default(60)
+  notas           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  trades Trade[]
+
+  @@map("orion_challenges")
+}
+
+model Trade {
+  id                      String   @id @default(uuid())
+  fecha                   String
+  hora_entrada            String
+  hora_cierre             String?
+  resultado               String
+  pnl_neto                Float
+  tipo_setup              String
+  direccion               String
+  tendencia_diaria        String?
+  volatilidad_sesion      String?
+  hora_valida             Boolean  @default(true)
+  noticias_cercanas       Boolean  @default(false)
+  confirmacion_vela       Boolean  @default(true)
+  be_activado             Boolean  @default(false)
+  siguio_plan             Boolean  @default(true)
+  desviacion_plan         String?
+  segundo_trade_dia       Boolean  @default(false)
+  motivo_segundo_trade    String?
+  estado_emocional_entrada Int     @default(3)
+  estado_emocional_cierre  Int     @default(3)
+  confianza_setup         Int      @default(3)
+  fomo                    Boolean  @default(false)
+  revenge_trading         Boolean  @default(false)
+  overtrading             Boolean  @default(false)
+  dudas_antes_entrada     Boolean  @default(false)
+  no_movio_sl_a_be        Boolean  @default(false)
+  notas_post              String?
+  notas_pre               String?
+  leccion                 String?
+  pnl_acumulado_challenge Float    @default(0)
+  nro_trade_challenge     Int      @default(0)
+  spread                  Float    @default(1.5)
+  precio_entrada          Float?
+  precio_tp               Float?
+  precio_sl               Float?
+  orb_high                Float?
+  orb_low                 Float?
+  ruptura_limpia          Boolean  @default(true)
+  llego_a_10pt            Boolean  @default(false)
+
+  challenge_id String
+  challenge    Challenge @relation(fields: [challenge_id], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orion_trades")
+}
