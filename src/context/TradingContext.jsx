@@ -27,22 +27,25 @@ const tradingReducer = (state, action) => {
     case 'SET_DATA': {
       return {
         ...state,
-        challenges: action.payload.challenges,
-        trades: action.payload.trades,
+        challenges: Array.isArray(action.payload.challenges) ? action.payload.challenges : [],
+        trades: Array.isArray(action.payload.trades) ? action.payload.trades : [],
         isLoading: false,
-        activeChallengeId: state.activeChallengeId || (action.payload.challenges.length > 0 ? action.payload.challenges[0].id : null)
+        activeChallengeId: state.activeChallengeId || (Array.isArray(action.payload.challenges) && action.payload.challenges.length > 0 ? action.payload.challenges[0].id : null)
       }
     }
     case 'ADD_TRADE': {
-      return { ...state, trades: [...state.trades, action.payload], draftTrade: null }
+      const currentTrades = Array.isArray(state.trades) ? state.trades : []
+      return { ...state, trades: [...currentTrades, action.payload], draftTrade: null }
     }
     case 'DELETE_TRADE': {
-      return { ...state, trades: state.trades.filter(t => t.id !== action.payload) }
+      const currentTrades = Array.isArray(state.trades) ? state.trades : []
+      return { ...state, trades: currentTrades.filter(t => t.id !== action.payload) }
     }
     case 'ADD_CHALLENGE': {
+      const currentChallenges = Array.isArray(state.challenges) ? state.challenges : []
       return {
         ...state,
-        challenges: [...state.challenges, action.payload],
+        challenges: [...currentChallenges, action.payload],
         activeChallengeId: action.payload.id,
       }
     }
@@ -90,10 +93,13 @@ export function TradingProvider({ children }) {
     loadData()
   }, [])
 
-  const activeChallenge = state.challenges.find(c => c.id === state.activeChallengeId) || null
-  const challengeTrades = state.trades
+  const challenges = Array.isArray(state.challenges) ? state.challenges : []
+  const trades = Array.isArray(state.trades) ? state.trades : []
+
+  const activeChallenge = challenges.find(c => c.id === state.activeChallengeId) || null
+  const challengeTrades = trades
     .filter(t => t.challenge_id === state.activeChallengeId)
-    .sort((a, b) => new Date(a.fecha + 'T' + a.hora_entrada) - new Date(b.fecha + 'T' + b.hora_entrada))
+    .sort((a, b) => new Date(a.fecha + 'T' + (a.hora_entrada || '00:00')) - new Date(b.fecha + 'T' + (b.hora_entrada || '00:00')))
 
   // Acciones asíncronas
   const addTrade = useCallback(async (payload) => {
